@@ -4,7 +4,7 @@ import { Partner } from "../models/partner.model.js";
 import { VerificationPartner } from "../models/verifyPartner.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiResponce.js";
-
+import { ClientService } from "../models/clientService.model.js";
 
 const generateAccessAndRefereshTokens = async (partnerId) => {
     try {
@@ -286,7 +286,79 @@ const updateVerifyDocument = asyncHandler(async (req, res) => {
         )
 })
 
+const getClient = asyncHandler(async (req, res) => {
+    try {
+        const partner = await Partner.findById(req.partner?._id);
+        console.log("Partner", partner);
+        if (!partner) {
+            throw new ApiError(409, "Partner does not exit");
+        }
+        const city = partner.city;
+        console.log("city", city);
+        const cityClients = await ClientService.find({ city: { $exists: true, $ne: null }, status: "new" });
+        console.log("cityClients", cityClients);
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, cityClients, "City find successfully")
+            )
+    } catch (error) {
+        console.error("City Not found:", error);
+        return res.status(500).json(
+            new ApiResponse(
+                500,
+                null,
+                error.message || "City  failed"
+            )
+        );
+    }
+})
 
+const bookClient = asyncHandler(async (req, res) => {
+    try {
+        const partner = await Partner.findById(req.partner?._id);
+        console.log("Partner", partner);
+        if (!partner) {
+            throw new ApiError(409, "Partner does not exit");
+        }
+        const { clientId } = req.body;
+        console.log("clientId", clientId);
+        // const cityClients = await ClientService.findOne(clientId);
+        const cityClients = await ClientService.find({clientId: { $exists: true, $ne: null }});
+        console.log("cityClients", cityClients);
+        if (!cityClients) {
+            throw new ApiError(409, "Client with given id does not exit");
+        }
+        const booking = await ClientService.findByIdAndUpdate(
+            cityClients[0]._id,
+            {
+                $set: {
+                    partnerId: partner._id,
+                    status: "Booked"
+                }
+            },
+            { new: true }
+        );
+        if (!booking) {
+            throw new ApiError(409, "Error in Booking");
+        }
+        console.log("booking",booking);
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, booking, "Client Booked successfully")
+            )
+    } catch (error) {
+        console.error("Client not Booked :", error);
+        return res.status(500).json(
+            new ApiResponse(
+                500,
+                null,
+                error.message || "Client not Booked  failed"
+            )
+        );
+    }
+})
 export {
     registerPartner,
     loginPartner,
@@ -294,4 +366,6 @@ export {
     logoutPartner,
     changeCurrentPassword,
     updateVerifyDocument,
+    getClient,
+    bookClient
 }
