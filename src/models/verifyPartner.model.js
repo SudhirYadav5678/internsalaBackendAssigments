@@ -9,20 +9,20 @@ const verifyPartnerSchema = new Schema({
         type:Boolean,
         default:false
     },
-    document:{
+    document:[{
         type:String,
         required:[true,"Document is required for the verification"]
-    },
-    proofOFWork:{
+    }],
+    proofOFWork:[{
         type:String,
-    },
-    webSiteLink:{
+    }],
+    webSiteLink:[{
         type:String
-    },
-    // partner:{
-    //     type: Schema.Types.ObjectId,
-    //         ref: "Partner"
-    // }
+    }],
+    partner:{
+        type: Schema.Types.ObjectId,
+            ref: "Partner"
+    }
 },{timestamps:true})
 
 export const VerificationPartner = mongoose.model("VerificationPartner",verifyPartnerSchema)

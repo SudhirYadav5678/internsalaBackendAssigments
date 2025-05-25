@@ -3,9 +3,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 
-const partnerSchema = new Schema(
+const adminSchema = new Schema(
     {
-        partnername: {
+        adminId: {
             type: String,
             required: true,
             unique: true,
@@ -20,9 +20,6 @@ const partnerSchema = new Schema(
             lowecase: true,
             trim: true, 
         },
-        avatar: {
-            type: String, // cloudinary url
-        },
         fullName: {
             type: String,
             required: true,
@@ -30,28 +27,11 @@ const partnerSchema = new Schema(
         },
         role:{
             type:String,
-            default:"Partner"
-        },
-        phone:{
-            type:String,
-            required:true,
-            trim: true,
-        },
-        location:{
-            type:String,
-            required:true
-        },
-        city:{
-            type:String,
-            required:true
+            default:"Admin"
         },
         password: {
             type: String,
             required: [true, 'Password is required']
-        },
-        document:{
-            type: Schema.Types.ObjectId,
-            ref: "VerificationPartner"
         },
         refreshToken: {
             type: String
@@ -64,21 +44,21 @@ const partnerSchema = new Schema(
 )
 
 
-partnerSchema.pre( 'save', async function (next) {
+adminSchema.pre( 'save', async function (next) {
     if (this.isModified("password")){ 
         this.password = await bcrypt.hash(this.password, 8); 
         next();}
 })
 
-partnerSchema.methods.isCorrectPassword = async function (password) {
+adminSchema.methods.isCorrectPassword = async function (password) {
     return await bcrypt.compare(password, this.password)} 
 
 
-partnerSchema.methods.generateAccessToken=function(){
+adminSchema.methods.generateAccessToken=function(){
      return jwt.sign({// payload 
         _id:this._id,
         email:this.email,
-        partnername:this.partnername,
+        adminId:this.adminId,
         fullName:this.fullName, 
     },
     process.env.ACCESS_TOKEN_SECRET,
@@ -88,7 +68,7 @@ partnerSchema.methods.generateAccessToken=function(){
 }
 
 
-partnerSchema.methods.generateRefreshToken=function(){return jwt.sign({
+adminSchema.methods.generateRefreshToken=function(){return jwt.sign({
     _id:this._id,
 },
 process.env.REFRESH_TOKEN_SECRET,
@@ -97,4 +77,4 @@ process.env.REFRESH_TOKEN_SECRET,
 })}
 
 
-export const Partner = mongoose.model("Partner", partnerSchema)
+export const Admin = mongoose.model("Admin", adminSchema)

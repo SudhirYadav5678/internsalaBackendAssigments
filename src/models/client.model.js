@@ -25,6 +25,10 @@ const clientSchema = new Schema(
             required: true,
             trim: true, 
         },
+        role:{
+            type:String,
+            default:"Client"
+        },
         phoneNo:{
             type:String,
             required:true,

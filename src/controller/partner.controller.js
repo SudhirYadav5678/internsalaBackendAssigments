@@ -42,6 +42,7 @@ const registerPartner = asyncHandler(async (req, res) => {
             throw new ApiError(409, "User with email or username already exists")
         }
 
+
         let avatarLocalPath;
         if (req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0) {
             avatarLocalPath = req.files.avatar[0].path
@@ -99,13 +100,13 @@ const loginPartner = asyncHandler(async (req, res) => {
             throw new ApiError(404, "User does not exist")
         }
 
-        const isPasswordValid = await user.isCorrectPassword(password)
+        const isPasswordValid = await partner.isCorrectPassword(password)
 
         if (!isPasswordValid) {
             throw new ApiError(401, "Invalid user credentials")
         }
 
-        const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user._id)
+        const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(partner._id)
 
         const loggedInPartner = await Partner.findById(partner._id).select("-password -refreshToken")
 
@@ -143,25 +144,32 @@ const loginPartner = asyncHandler(async (req, res) => {
 const verifyPartner = asyncHandler(async (req, res) => {
     try {
         const partner = await Partner.findById(req.partner._id)
-        console.log("partner", partner);
-        if (partner) {
+        //console.log("partner", partner);
+        if (!partner) {
             throw new ApiError(409, "Partner does not find.")
         }
         const { webSiteLink } = req.body;
-        log("webSiteLink", webSiteLink);
+        //console.log("webSiteLink", webSiteLink);
 
-        const documentLocalPath = req.files?.document[0]?.path;
-        const proofOFWorkLocalPath = req.files?.document[0]?.path;
+        const documentLocalPath = req.files?.document?.[0]?.path;
+        //console.log("documentLocalPath", documentLocalPath);
+
+        let proofOFWorkLocalPath;
+        if (req.files?.proofOFWork?.length > 0) {
+            proofOFWorkLocalPath = req.files.proofOFWork[0].path;
+        }
+        //console.log("proofOFWorkLocalPath", proofOFWorkLocalPath);
+
         if (!documentLocalPath) {
             throw new ApiError(400, "Document file is required");
         }
         const document = await uploadOnCloudinary(documentLocalPath)
         const proofOFWork = await uploadOnCloudinary(proofOFWorkLocalPath)
         if (!document) {
-            throw new ApiError(400, "Document file is required");
+            throw new ApiError(400, "Document file is required rom cloudinary");
         }
 
-        const verificationPartner = VerificationPartner.create({
+        const verificationPartner = await VerificationPartner.create({
             partnerId: partner,
             webSiteLink: webSiteLink || "",
             document: document.url,
@@ -180,93 +188,92 @@ const verifyPartner = asyncHandler(async (req, res) => {
                 )
             )
     } catch (error) {
-        return res.
-            status(500)
-            .json(
-                new ApiResponse(
-                    500,
-                    error.message,
-                    "Partner verification In Failed"
-                )
+        console.error("Verification error:", error);
+        return res.status(500).json(
+            new ApiResponse(
+                500,
+                null,
+                error.message || "Partner verification failed"
             )
+        );
     }
 })
 
 const logoutPartner = asyncHandler(async (req, res) => {
     try {
         await Partner.findByIdAndUpdate(
-        req.partner._id,
-        {
-            $unset: {
-                refreshToken: 1 // this removes the field from document
+            req.partner._id,
+            {
+                $unset: {
+                    refreshToken: 1 // this removes the field from document
+                }
+            },
+            {
+                new: true
             }
-        },
-        {
-            new: true
+        )
+
+        const options = {
+            httpOnly: true,
+            secure: true
         }
-    )
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
-
-    return res
-        .status(200)
-        .clearCookie("accessToken", options)
-        .clearCookie("refreshToken", options)
-        .json(new ApiResponse(200, {}, "Partner logged Out"))
+        return res
+            .status(200)
+            .clearCookie("accessToken", options)
+            .clearCookie("refreshToken", options)
+            .json(new ApiResponse(200, {}, "Partner logged Out"))
     } catch (error) {
         return res
-        .status(500)
-        .json(new ApiResponse(500, error.message, "Partner logged Out failed!!!"))
+            .status(500)
+            .json(new ApiResponse(500, error.message, "Partner logged Out failed!!!"))
     }
 })
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     try {
         const { oldPassword, newPassword } = req.body
-    const partner = await Partner.findById(req.partner?._id)
-    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+        const partner = await Partner.findById(req.partner?._id)
+        const isPasswordCorrect = await user.isCorrectPassword(oldPassword)
 
-    if (!isPasswordCorrect) {
-        throw new ApiError(400, "Invalid old password")
-    }
+        if (!isPasswordCorrect) {
+            throw new ApiError(400, "Invalid old password")
+        }
 
-    user.password = newPassword
-    await user.save({ validateBeforeSave: false })
+        partner.password = newPassword
+        await partner.save({ validateBeforeSave: false })
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, {}, "Password changed successfully"))
+        return res
+            .status(200)
+            .json(new ApiResponse(200, {}, "Password changed successfully"))
     } catch (error) {
         return res
-        .status(500)
-        .json(new ApiResponse(500,error.message, "Password changed successfully"))
+            .status(500)
+            .json(new ApiResponse(500, error.message, "Password changed successfully"))
     }
 })
 
-const updateUserAvatar = asyncHandler(async (req, res) => {
-    const avatarLocalPath = req.file?.path
+const updateVerifyDocument = asyncHandler(async (req, res) => {
+    const documentLocalPath = req.file?.path
 
-    if (!avatarLocalPath) {
-        throw new ApiError(400, "Avatar file is missing")
+    if (!documentLocalPath) {
+        throw new ApiError(400, "Doucment file is missing")
     }
 
-    //TODO: delete old image - assignment
 
-    const avatar = await uploadOnCloudinary(avatarLocalPath)
+    const document = await uploadOnCloudinary(documentLocalPath)
 
-    if (!avatar.url) {
-        throw new ApiError(400, "Error while uploading on avatar")
+    if (!document.url) {
+        throw new ApiError(400, "Error while uploading on document")
 
     }
+    //delete old image
 
-    const user = await User.findByIdAndUpdate(
-        req.user?._id,
+    const partner = await VerificationPartner.findByIdAndUpdate(
+        req.partner?._id,
         {
             $set: {
-                avatar: avatar.url
+                document: document.url
             }
         },
         { new: true }
@@ -275,7 +282,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(200, user, "Avatar image updated successfully")
+            new ApiResponse(200, user, "Document image updated successfully")
         )
 })
 
@@ -286,5 +293,5 @@ export {
     verifyPartner,
     logoutPartner,
     changeCurrentPassword,
-    updateUserAvatar,
+    updateVerifyDocument,
 }

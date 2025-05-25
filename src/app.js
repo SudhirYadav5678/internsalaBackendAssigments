@@ -16,10 +16,12 @@ app.use(express.static("public"))
 
 //import router
 import clientRouter from "./routes/client.router.js";
-import partnerRouter from "./routes/partner.router.js"
+import partnerRouter from "./routes/partner.router.js";
+import adminRouter from"./routes/admin.router.js";
+
 // route declartion 
 app.use("/api/v1/client",clientRouter)
 app.use("/api/v1/partner",partnerRouter)
-
+app.use("/api/v1/admin",adminRouter)
 
 export {app}
