@@ -10,6 +10,12 @@ const clientServiceSchema = new Schema(
             lowercase: true,
             trim: true
         },
+        partnerId: {
+            type: String,
+            unique: true,
+            lowercase: true,
+            trim: true
+        },
         category:{
             type:String,
             required:true
@@ -52,4 +58,4 @@ const clientServiceSchema = new Schema(
 )
 
 
-export const ClientServiceSchema = mongoose.model("clientServiceSchema", clientServiceSchema)
+export const ClientService = mongoose.model("clientService", clientServiceSchema)

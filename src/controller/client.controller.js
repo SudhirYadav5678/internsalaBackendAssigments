@@ -24,11 +24,11 @@ const generateAccessAndRefereshTokens = async (clientId) => {
 
 const registerClient = asyncHandler(async (req, res) => {
     try {
-        const { fullName, email, clientname, password, phoneNo, location, city } = req.body
+        const { fullName, email, clientname, password, phone} = req.body
         //console.log("email: ", email);
 
         if (
-            [fullName, email, clientname, password, , phoneNo, location, city].some((field) => field?.trim() === "")
+            [fullName, email, clientname, password, , phone].some((field) => field?.trim() === "")
         ) {
             throw new ApiError(400, "All fields are required")
         }
@@ -45,9 +45,7 @@ const registerClient = asyncHandler(async (req, res) => {
         const client = await Client.create({
             fullName,
             email,
-            phoneNo,
-            location,
-            city,
+            phone,
             password,
             clientname: clientname.toLowerCase()
         })

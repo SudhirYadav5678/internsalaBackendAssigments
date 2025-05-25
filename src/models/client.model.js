@@ -29,7 +29,7 @@ const clientSchema = new Schema(
             type:String,
             default:"Client"
         },
-        phoneNo:{
+        phone:{
             type:String,
             required:true,
             trim: true,
@@ -37,14 +37,6 @@ const clientSchema = new Schema(
         password: {
             type: String,
             required: [true, 'Password is required']
-        },
-        location:{
-            type:String,
-            required:true
-        },
-        city:{
-            type:String,
-            required:true
         },
         refreshToken: {
             type: String
