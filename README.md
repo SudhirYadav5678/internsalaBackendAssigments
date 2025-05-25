@@ -1,0 +1,15 @@
+#To run the program:-
+1) run npm i
+2) setup all .env file credential
+  sample =::::::
+MONOGO_URI = 
+PORT = 8000
+CORS = "*"
+DB_NAME= InternsalaBackend
+ACCESS_TOKEN_SECRET=
+ACCESS_TOKEN_EXPIRY=10d
+REFRESH_TOKEN_SECRET=
+REFRESH_TOKEN_EXPIRY=2d
+CLOUDINARY_CLOUD_NAME = 
+CLOUDINARY_API_KEY = 
+CLOUDINARY_API_SECRET = 
