@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { bookClient, changeCurrentPassword, getClient, loginPartner, registerPartner, updateVerifyDocument, verifyPartner } from '../controller/partner.controller.js';
+import { bookClient, changeCurrentPassword, getAllBookedClient, getClient, loginPartner, registerPartner, updateVerifyDocument, verifyPartner } from '../controller/partner.controller.js';
 import { verifyJWT } from "../middlewares/partner.auth.js"
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -31,6 +31,7 @@ router.post(
 router.route("/changeCurrentPassword").post(verifyJWT, changeCurrentPassword);
 router.route("/updateVerifyDocument").post(verifyJWT, updateVerifyDocument);
 router.route("/getClient").get(verifyJWT,getClient);
-router.route("/bookClient").post(verifyJWT,bookClient)
+router.route("/bookClient").post(verifyJWT,bookClient);
+router.route("/get-AllBooked-Client").get(verifyJWT,getAllBookedClient);
 
 export default router;

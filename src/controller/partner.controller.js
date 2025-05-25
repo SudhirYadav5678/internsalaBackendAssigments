@@ -324,7 +324,7 @@ const bookClient = asyncHandler(async (req, res) => {
         const { clientId } = req.body;
         console.log("clientId", clientId);
         // const cityClients = await ClientService.findOne(clientId);
-        const cityClients = await ClientService.find({clientId: { $exists: true, $ne: null }});
+        const cityClients = await ClientService.find({ clientId: { $exists: true, $ne: null } });
         console.log("cityClients", cityClients);
         if (!cityClients) {
             throw new ApiError(409, "Client with given id does not exit");
@@ -342,7 +342,7 @@ const bookClient = asyncHandler(async (req, res) => {
         if (!booking) {
             throw new ApiError(409, "Error in Booking");
         }
-        console.log("booking",booking);
+        console.log("booking", booking);
         return res
             .status(200)
             .json(
@@ -350,6 +350,39 @@ const bookClient = asyncHandler(async (req, res) => {
             )
     } catch (error) {
         console.error("Client not Booked :", error);
+        return res.status(500).json(
+            new ApiResponse(
+                500,
+                null,
+                error.message || "Client not Booked  failed"
+            )
+        );
+    }
+})
+
+const getAllBookedClient = asyncHandler(async (req, res) => {
+    try {
+        const partner = await Partner.findById(req.partner?._id);
+        console.log("Partner", partner);
+        if (!partner) {
+            throw new ApiError(409, "Partner does not exit");
+        }
+        const partnerId = partner._id.toString();
+        const clientBooked = await ClientService.find({
+            partnerId: partnerId,
+            status: "Booked"
+        });
+        console.log("clientBooked", clientBooked);
+        if (!clientBooked) {
+            throw new ApiError(409, "Client not found");
+        }
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, clientBooked, "Client(s) Booked successfully")
+            )
+    } catch (error) {
+        console.error("Booked Client not found :", error);
         return res.status(500).json(
             new ApiResponse(
                 500,
@@ -367,5 +400,6 @@ export {
     changeCurrentPassword,
     updateVerifyDocument,
     getClient,
-    bookClient
+    bookClient,
+    getAllBookedClient
 }
