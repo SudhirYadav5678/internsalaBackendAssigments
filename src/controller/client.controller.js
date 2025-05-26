@@ -3,8 +3,8 @@ import { ApiError } from "../utils/ApiError.js"
 import { Client } from "../models/client.model.js"
 import { ApiResponse } from "../utils/apiResponce.js";
 import mongoose from "mongoose";
-import { sendOtpEmail } from "../utils/mailer.js"
-import { generateOTP, userOtps } from "../utils/otpGenerater.js"
+//import { sendOtpEmail } from "../utils/mailer.js"
+//import { generateOTP, userOtps } from "../utils/otpGenerater.js"
 
 
 const generateAccessAndRefereshTokens = async (clientId) => {
@@ -70,21 +70,21 @@ const registerClient = asyncHandler(async (req, res) => {
 
 })
 
-const verifiyEmail = asyncHandler(async (req, res) => {
-    try {
-        const {email} = req.body;
-        const otp = generateOTP();
-        userOtps[email] = otp;
-        await sendOtpEmail(email, otp);
-        return res.status(200).json(
-            new ApiResponse(200, null, "OTP sent to email. Please verify to complete registration.")
-        );
-    } catch (error) {
-        return res.status(500).json(
-            new ApiResponse(500, null, error?.message || "Client OTP verification failed")
-        );
-    }
-})
+// const verifiyEmail = asyncHandler(async (req, res) => {
+//     try {
+//         const {email} = req.body;
+//         const otp = generateOTP();
+//         userOtps[email] = otp;
+//         await sendOtpEmail(email, otp);
+//         return res.status(200).json(
+//             new ApiResponse(200, null, "OTP sent to email. Please verify to complete registration.")
+//         );
+//     } catch (error) {
+//         return res.status(500).json(
+//             new ApiResponse(500, null, error?.message || "Client OTP verification failed")
+//         );
+//     }
+// })
 
 const loginClient = asyncHandler(async (req, res) => {
     try {
@@ -199,7 +199,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
 export {
     registerClient,
-    verifiyEmail,
+    //verifiyEmail,
     loginClient,
     logoutClient,
     changeCurrentPassword,

@@ -1,0 +1,62 @@
+services:
+  app:
+    build: .
+    context: ./src
+    dockerfile: Dockerfile
+    container_name: Internsala
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgresql
+      - mongodb
+    networks:
+      - microservices-net
+  postgresql:
+    container_name: pg_sql
+    image: postgres
+    environment:
+      POSTGRES_USER: sudhir
+      POSTGRES_PASSWORD: sudhir123
+      POSTGRES_DB: mydb
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - microservices-net
+    restart: unless-stopped
+  pgadmin:
+    container_name: ms_pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: sudhi
+      PGADMIN_DEFAULT_PASSWORD: sudhir123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo
+    container_name: mongoDB
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=sudhir
+      - MONGO_INITDB_ROOT_PASSWORD=sudhir123
+
+networks:
+  microservices-net:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
+  mongo:

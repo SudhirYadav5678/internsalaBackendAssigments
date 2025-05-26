@@ -14,5 +14,5 @@ connectDB()
     
 })
 .catch((error)=>{
-    console.log("connection error in MongoDb", error);
+    console.log("connection error in MongoDb and Postgres", error);
 })
